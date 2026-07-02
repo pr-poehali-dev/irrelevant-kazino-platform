@@ -1,0 +1,22 @@
+{
+  "tests": [
+    {
+      "name": "Stats without session should deny",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "stats"},
+      "expectedStatus": 403,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Users without session should deny",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "users"},
+      "expectedStatus": 403,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

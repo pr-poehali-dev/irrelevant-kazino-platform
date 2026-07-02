@@ -1,0 +1,31 @@
+{
+  "tests": [
+    {
+      "name": "Register new user",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "register", "username": "testplayer01", "email": "testplayer01@kazino.dev", "password": "secret123"},
+      "expectedStatus": 200,
+      "expectedBody": {"session_id": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Login wrong password",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "login", "email": "testplayer01@kazino.dev", "password": "wrongpass"},
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Me without session",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "me"},
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

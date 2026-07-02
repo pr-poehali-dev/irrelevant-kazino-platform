@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
+import { api } from '@/lib/api';
 
 const HERO_BG =
   'https://cdn.poehali.dev/projects/93c0b181-ea31-44b6-8ab2-4800b81e358d/files/82d0d437-dd3e-4fb9-99ae-477cd5017dd4.jpg';
@@ -62,8 +64,25 @@ const accentMap: Record<string, string> = {
 };
 
 const Index = () => {
+  const navigate = useNavigate();
   const [activeCat, setActiveCat] = useState('Все');
   const [query, setQuery] = useState('');
+  const [user, setUser] = useState<{ username: string; balance: number; is_admin: boolean } | null>(null);
+
+  useEffect(() => {
+    const sid = localStorage.getItem('session_id');
+    if (sid) {
+      api.me().then((res) => {
+        if (!res.error) setUser({ username: res.username, balance: res.balance, is_admin: res.is_admin });
+      });
+    }
+  }, []);
+
+  function logout() {
+    api.logout();
+    localStorage.clear();
+    setUser(null);
+  }
 
   const filtered = GAMES.filter(
     (g) =>
@@ -98,15 +117,44 @@ const Index = () => {
           </nav>
 
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg glass neon-border">
-              <Icon name="Coins" size={16} className="text-neon-cyan" />
-              <span className="font-display font-semibold text-neon-cyan">12 450</span>
-              <span className="text-xs text-muted-foreground">PZC</span>
-            </div>
-            <Button className="plasma-gradient text-background font-semibold hover:opacity-90 box-glow">
-              <Icon name="Wallet" size={16} className="mr-1" />
-              Пополнить
-            </Button>
+            {user ? (
+              <>
+                <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg glass neon-border">
+                  <Icon name="Coins" size={16} className="text-neon-cyan" />
+                  <span className="font-display font-semibold text-neon-cyan">{user.balance.toLocaleString()}</span>
+                  <span className="text-xs text-muted-foreground">PZC</span>
+                </div>
+                {user.is_admin && (
+                  <Button size="sm" variant="outline" onClick={() => navigate('/admin')}
+                    className="neon-border text-xs hidden sm:flex">
+                    <Icon name="Shield" size={14} className="mr-1" /> Админ
+                  </Button>
+                )}
+                <div className="relative group">
+                  <button className="flex items-center gap-2 px-3 py-2 rounded-lg glass neon-border text-sm hover:bg-secondary transition-colors">
+                    <Icon name="User" size={16} className="text-neon-purple" />
+                    <span className="hidden sm:block">{user.username}</span>
+                  </button>
+                  <div className="absolute right-0 top-full mt-1 w-36 glass rounded-xl border border-border shadow-xl invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all">
+                    <button onClick={logout}
+                      className="w-full flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground hover:text-foreground rounded-xl transition-colors">
+                      <Icon name="LogOut" size={14} /> Выйти
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" className="neon-border" onClick={() => navigate('/auth')}>
+                  Войти
+                </Button>
+                <Button className="plasma-gradient text-background font-semibold hover:opacity-90 box-glow"
+                  onClick={() => navigate('/auth')}>
+                  <Icon name="Wallet" size={16} className="mr-1" />
+                  Пополнить
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
