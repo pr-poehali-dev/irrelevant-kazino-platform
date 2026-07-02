@@ -16,36 +16,30 @@ const NAV = [
 const CATEGORIES = ['Все', 'Слоты', 'Рулетка', 'Карты', 'Live', 'Краш'];
 
 const GAMES = [
-  { name: 'Plazma Slots', cat: 'Слоты', players: 1284, hot: true, icon: 'Cherry', accent: 'purple' },
-  { name: 'Neon Roulette', cat: 'Рулетка', players: 842, hot: true, icon: 'CircleDot', accent: 'cyan' },
-  { name: 'Cyber Blackjack', cat: 'Карты', players: 611, hot: false, icon: 'Spade', accent: 'pink' },
-  { name: 'Void Crash', cat: 'Краш', players: 2043, hot: true, icon: 'TrendingUp', accent: 'blue' },
-  { name: 'Quantum Poker', cat: 'Карты', players: 398, hot: false, icon: 'Diamond', accent: 'purple' },
-  { name: 'Aurora Live', cat: 'Live', players: 977, hot: true, icon: 'Radio', accent: 'cyan' },
-  { name: 'Hyper Dice', cat: 'Live', players: 456, hot: false, icon: 'Dices', accent: 'pink' },
-  { name: 'Star Fortune', cat: 'Слоты', players: 1520, hot: false, icon: 'Sparkles', accent: 'blue' },
+  { name: 'Plazma Slots', cat: 'Слоты', players: 0, hot: false, icon: 'Cherry', accent: 'purple' },
+  { name: 'Neon Roulette', cat: 'Рулетка', players: 0, hot: false, icon: 'CircleDot', accent: 'cyan' },
+  { name: 'Cyber Blackjack', cat: 'Карты', players: 0, hot: false, icon: 'Spade', accent: 'pink' },
+  { name: 'Void Crash', cat: 'Краш', players: 0, hot: false, icon: 'TrendingUp', accent: 'blue' },
+  { name: 'Quantum Poker', cat: 'Карты', players: 0, hot: false, icon: 'Diamond', accent: 'purple' },
+  { name: 'Aurora Live', cat: 'Live', players: 0, hot: false, icon: 'Radio', accent: 'cyan' },
+  { name: 'Hyper Dice', cat: 'Live', players: 0, hot: false, icon: 'Dices', accent: 'pink' },
+  { name: 'Star Fortune', cat: 'Слоты', players: 0, hot: false, icon: 'Sparkles', accent: 'blue' },
 ];
 
 const STATS = [
-  { label: 'Игроков онлайн', value: '8 942', icon: 'Users' },
-  { label: 'Выплачено за день', value: '4.2M', icon: 'Coins' },
-  { label: 'Активных турниров', value: '17', icon: 'Trophy' },
-  { label: 'Джекпот', value: '1.8M', icon: 'Flame' },
+  { label: 'Игроков онлайн', value: '0', icon: 'Users' },
+  { label: 'Выплачено за день', value: '0', icon: 'Coins' },
+  { label: 'Активных турниров', value: '0', icon: 'Trophy' },
+  { label: 'Джекпот', value: '0', icon: 'Flame' },
 ];
 
 const TOURNAMENTS = [
-  { name: 'Plazma Cup Weekly', prize: '500 000', players: 1240, ends: '2д 14ч', tier: 'Легенда' },
-  { name: 'Neon Sprint', prize: '120 000', players: 640, ends: '6ч 20м', tier: 'Про' },
-  { name: 'Void Masters', prize: '850 000', players: 2100, ends: '5д 03ч', tier: 'Элита' },
+  { name: 'Plazma Cup Weekly', prize: '0', players: 0, ends: 'скоро', tier: 'Легенда' },
+  { name: 'Neon Sprint', prize: '0', players: 0, ends: 'скоро', tier: 'Про' },
+  { name: 'Void Masters', prize: '0', players: 0, ends: 'скоро', tier: 'Элита' },
 ];
 
-const LEADERS = [
-  { rank: 1, name: 'NeonWolf', xp: 98400, coin: '2.4M' },
-  { rank: 2, name: 'PlazmaKing', xp: 91200, coin: '2.1M' },
-  { rank: 3, name: 'CyberGhost', xp: 87650, coin: '1.9M' },
-  { rank: 4, name: 'VoidHunter', xp: 74300, coin: '1.5M' },
-  { rank: 5, name: 'AuroraX', xp: 68900, coin: '1.3M' },
-];
+const LEADERS: { rank: number; name: string; xp: number; coin: string }[] = [];
 
 const VIP = [
   { tier: 'Bronze', cb: '3%', color: 'from-amber-600 to-amber-400', icon: 'Shield' },
@@ -282,6 +276,13 @@ const Index = () => {
               <h3 className="font-display text-lg font-semibold">Рейтинг игроков</h3>
             </div>
             <div className="space-y-3">
+              {LEADERS.length === 0 && (
+                <div className="flex flex-col items-center text-center py-8 text-muted-foreground">
+                  <Icon name="Users" size={28} className="mb-3 opacity-50" />
+                  <p className="text-sm">Пока нет игроков</p>
+                  <p className="text-xs mt-1">Стань первым в рейтинге</p>
+                </div>
+              )}
               {LEADERS.map((l) => (
                 <div key={l.rank} className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary transition-colors">
                   <span
