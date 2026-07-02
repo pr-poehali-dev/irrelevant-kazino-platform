@@ -18,14 +18,14 @@ const NAV = [
 const CATEGORIES = ['Все', 'Слоты', 'Рулетка', 'Карты', 'Live', 'Краш'];
 
 const GAMES = [
-  { name: 'Plazma Slots', cat: 'Слоты', players: 0, hot: false, icon: 'Cherry', accent: 'purple' },
-  { name: 'Neon Roulette', cat: 'Рулетка', players: 0, hot: false, icon: 'CircleDot', accent: 'cyan' },
-  { name: 'Cyber Blackjack', cat: 'Карты', players: 0, hot: false, icon: 'Spade', accent: 'pink' },
-  { name: 'Void Crash', cat: 'Краш', players: 0, hot: false, icon: 'TrendingUp', accent: 'blue' },
-  { name: 'Quantum Poker', cat: 'Карты', players: 0, hot: false, icon: 'Diamond', accent: 'purple' },
-  { name: 'Aurora Live', cat: 'Live', players: 0, hot: false, icon: 'Radio', accent: 'cyan' },
-  { name: 'Hyper Dice', cat: 'Live', players: 0, hot: false, icon: 'Dices', accent: 'pink' },
-  { name: 'Star Fortune', cat: 'Слоты', players: 0, hot: false, icon: 'Sparkles', accent: 'blue' },
+  { slug: 'plazma-slots',    name: 'Plazma Slots',    cat: 'Слоты',   players: 0, hot: false, icon: 'Cherry',     accent: 'purple' },
+  { slug: 'neon-roulette',   name: 'Neon Roulette',   cat: 'Рулетка', players: 0, hot: false, icon: 'CircleDot',  accent: 'cyan' },
+  { slug: 'cyber-blackjack', name: 'Cyber Blackjack', cat: 'Карты',   players: 0, hot: false, icon: 'Spade',      accent: 'pink' },
+  { slug: 'void-crash',      name: 'Void Crash',      cat: 'Краш',    players: 0, hot: false, icon: 'TrendingUp', accent: 'blue' },
+  { slug: 'quantum-poker',   name: 'Quantum Poker',   cat: 'Карты',   players: 0, hot: false, icon: 'Diamond',    accent: 'purple' },
+  { slug: 'aurora-live',     name: 'Aurora Live',     cat: 'Live',    players: 0, hot: false, icon: 'Radio',      accent: 'cyan' },
+  { slug: 'hyper-dice',      name: 'Hyper Dice',      cat: 'Live',    players: 0, hot: false, icon: 'Dices',      accent: 'pink' },
+  { slug: 'star-fortune',    name: 'Star Fortune',    cat: 'Слоты',   players: 0, hot: false, icon: 'Sparkles',   accent: 'blue' },
 ];
 
 const STATS = [
@@ -68,6 +68,10 @@ const Index = () => {
   const [activeCat, setActiveCat] = useState('Все');
   const [query, setQuery] = useState('');
   const [user, setUser] = useState<{ username: string; balance: number; is_admin: boolean } | null>(null);
+  const [depositModal, setDepositModal] = useState(false);
+  const [depositAmount, setDepositAmount] = useState('500');
+  const [depositLoading, setDepositLoading] = useState(false);
+  const [depositMsg, setDepositMsg] = useState('');
 
   useEffect(() => {
     const sid = localStorage.getItem('session_id');
@@ -82,6 +86,28 @@ const Index = () => {
     api.logout();
     localStorage.clear();
     setUser(null);
+  }
+
+  function openDeposit() {
+    if (!user) { navigate('/auth'); return; }
+    setDepositMsg('');
+    setDepositModal(true);
+  }
+
+  async function handleDeposit() {
+    const amount = parseInt(depositAmount);
+    if (!amount || amount < 100) { setDepositMsg('Минимальная сумма — 100 ₽'); return; }
+    setDepositLoading(true);
+    setDepositMsg('');
+    const res = await api.createPayment(amount);
+    setDepositLoading(false);
+    if (res.error) { setDepositMsg(res.error); return; }
+    window.location.href = res.confirm_url;
+  }
+
+  function goPlay() {
+    if (!user) { navigate('/auth'); return; }
+    navigate('/game/void-crash');
   }
 
   const filtered = GAMES.filter(
@@ -119,11 +145,13 @@ const Index = () => {
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg glass neon-border">
+                <button onClick={openDeposit}
+                  className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg glass neon-border hover:box-glow transition-all">
                   <Icon name="Coins" size={16} className="text-neon-cyan" />
                   <span className="font-display font-semibold text-neon-cyan">{user.balance.toLocaleString()}</span>
                   <span className="text-xs text-muted-foreground">PZC</span>
-                </div>
+                  <Icon name="Plus" size={13} className="text-neon-purple ml-1" />
+                </button>
                 {user.is_admin && (
                   <Button size="sm" variant="outline" onClick={() => navigate('/admin')}
                     className="neon-border text-xs hidden sm:flex">
@@ -150,8 +178,8 @@ const Index = () => {
                 </Button>
                 <Button className="plasma-gradient text-background font-semibold hover:opacity-90 box-glow"
                   onClick={() => navigate('/auth')}>
-                  <Icon name="Wallet" size={16} className="mr-1" />
-                  Пополнить
+                  <Icon name="Play" size={16} className="mr-1" />
+                  Играть
                 </Button>
               </>
             )}
@@ -193,13 +221,15 @@ const Index = () => {
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4 animate-rise" style={{ animationDelay: '0.3s' }}>
-              <Button size="lg" className="plasma-gradient text-background font-semibold text-base hover:opacity-90 box-glow">
+              <Button size="lg" onClick={goPlay}
+                className="plasma-gradient text-background font-semibold text-base hover:opacity-90 box-glow">
                 <Icon name="Play" size={18} className="mr-1" />
                 Играть сейчас
               </Button>
-              <Button size="lg" variant="outline" className="neon-border text-foreground hover:bg-secondary text-base">
-                <Icon name="Gift" size={18} className="mr-1" />
-                Забрать бонус
+              <Button size="lg" variant="outline" onClick={openDeposit}
+                className="neon-border text-foreground hover:bg-secondary text-base">
+                <Icon name="Wallet" size={18} className="mr-1" />
+                Пополнить баланс
               </Button>
             </div>
           </div>
@@ -256,6 +286,7 @@ const Index = () => {
           {filtered.map((g) => (
             <div
               key={g.name}
+              onClick={() => user ? navigate(`/game/${g.slug}`) : navigate('/auth')}
               className="group relative glass rounded-2xl p-6 border border-border hover:neon-border transition-all hover-scale cursor-pointer overflow-hidden"
             >
               <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-neon-purple/10 blur-2xl group-hover:bg-neon-purple/25 transition-colors" />
@@ -309,7 +340,8 @@ const Index = () => {
                   <span className="flex items-center gap-1 text-neon-pink">
                     <Icon name="Clock" size={13} /> до конца {t.ends}
                   </span>
-                  <Button size="sm" className="plasma-gradient text-background font-semibold hover:opacity-90">
+                  <Button size="sm" onClick={() => user ? navigate('/game/void-crash') : navigate('/auth')}
+                    className="plasma-gradient text-background font-semibold hover:opacity-90">
                     Участвовать
                   </Button>
                 </div>
@@ -414,13 +446,74 @@ const Index = () => {
               Пополни баланс через удобный платёжный шлюз и получи стартовый бонус
               к первому депозиту в Plazma Coin.
             </p>
-            <Button size="lg" className="mt-8 plasma-gradient text-background font-semibold text-base hover:opacity-90 box-glow">
+            <Button size="lg" onClick={goPlay}
+              className="mt-8 plasma-gradient text-background font-semibold text-base hover:opacity-90 box-glow">
               <Icon name="Rocket" size={18} className="mr-1" />
               Начать играть
             </Button>
           </div>
         </div>
       </section>
+
+      {/* Deposit Modal */}
+      {depositModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
+          onClick={(e) => e.target === e.currentTarget && setDepositModal(false)}>
+          <div className="glass rounded-2xl border border-border p-8 w-full max-w-sm box-glow animate-rise">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-display text-xl font-bold">Пополнить баланс</h2>
+              <button onClick={() => setDepositModal(false)}
+                className="text-muted-foreground hover:text-foreground transition-colors">
+                <Icon name="X" size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1.5 block">Сумма в рублях</label>
+                <input type="number" value={depositAmount}
+                  onChange={(e) => setDepositAmount(e.target.value)}
+                  placeholder="Минимум 100 ₽"
+                  className="w-full px-4 py-2.5 rounded-lg bg-secondary border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/60" />
+              </div>
+
+              <div className="flex gap-2 flex-wrap">
+                {[100, 500, 1000, 3000, 5000].map((v) => (
+                  <button key={v} onClick={() => setDepositAmount(String(v))}
+                    className={`px-3 py-1.5 rounded-lg text-xs transition-all ${
+                      depositAmount === String(v)
+                        ? 'plasma-gradient text-background'
+                        : 'bg-secondary text-muted-foreground hover:text-foreground'
+                    }`}>
+                    {v} ₽
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-secondary text-xs">
+                <span className="text-muted-foreground">Получишь Plazma Coin</span>
+                <span className="font-semibold text-neon-cyan">
+                  {(parseInt(depositAmount || '0') * 10).toLocaleString()} PZC
+                </span>
+              </div>
+              <div className="text-[10px] text-muted-foreground">1 ₽ = 10 PZC · оплата через ЮKassa</div>
+
+              {depositMsg && (
+                <div className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">
+                  {depositMsg}
+                </div>
+              )}
+
+              <Button onClick={handleDeposit} disabled={depositLoading}
+                className="w-full plasma-gradient text-background font-semibold hover:opacity-90 box-glow h-11">
+                {depositLoading
+                  ? <Icon name="Loader" size={18} className="animate-spin" />
+                  : <><Icon name="CreditCard" size={16} className="mr-1" /> Перейти к оплате</>}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="border-t border-border py-10">
